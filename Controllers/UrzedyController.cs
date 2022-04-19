@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KSiwiak_Urzad_API.Data;
 using Urzad_KSiwiak.Models;
+using KSiwiak_Urzad_API.Models;
 
 namespace KSiwiak_Urzad_API.Controllers
 {
@@ -16,22 +17,34 @@ namespace KSiwiak_Urzad_API.Controllers
     public class UrzedyController : ControllerBase
     {
         private readonly UrzadDBContext _context;
+        private int index;
 
         public UrzedyController(UrzadDBContext context)
         {
             _context = context;
+            index = _context.Urzedy.ToList().Last().id;
         }
 
         // GET: api/Urzedy
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Urzedy>>> GetUrzedy()
+        public async Task<ActionResult<IEnumerable<Urzad_Woj>>> GetUrzedy()
         {
-            return await _context.Urzedy.ToListAsync();
+            List<Urzad_Woj> results = new List<Urzad_Woj>();
+            var wojList = _context.Wojewodztwa.ToList();
+            foreach (Urzedy urzedy in _context.Urzedy.ToList()) {
+                Urzad_Woj urzad = new Urzad_Woj { id = urzedy.id, nazwa_urzedu = urzedy.nazwa_urzedu, 
+                                                wojewodztwo_id = urzedy.wojewodztwo_id, 
+                                                nazwa_wojewodztwa = wojList.Where(w => w.id == urzedy.wojewodztwo_id).FirstOrDefault().nazwa};
+
+                results.Add(urzad);
+            }
+            
+            return results;
         }
 
         // GET: api/Urzedy/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Urzedy>> GetUrzedy(int id)
+        public async Task<ActionResult<Urzad_Woj>> GetUrzedy(int id)
         {
             var urzedy = await _context.Urzedy.FindAsync(id);
 
@@ -40,7 +53,9 @@ namespace KSiwiak_Urzad_API.Controllers
                 return NotFound();
             }
 
-            return urzedy;
+            string nazwaWoj = _context.Wojewodztwa.Where(w => w.id == urzedy.wojewodztwo_id).FirstOrDefault().nazwa;
+
+            return new Urzad_Woj { id = urzedy.id, nazwa_urzedu = urzedy.nazwa_urzedu, nazwa_wojewodztwa = nazwaWoj, wojewodztwo_id = urzedy.wojewodztwo_id };
         }
 
         // PUT: api/Urzedy/5
@@ -53,7 +68,17 @@ namespace KSiwiak_Urzad_API.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(urzedy).State = EntityState.Modified;
+            //_context.Entry(urzedy).State = EntityState.Modified;
+            try
+            {
+                Urzedy urzadOld = _context.Urzedy.Find(id);
+                urzadOld.nazwa_urzedu = urzedy.nazwa_urzedu;
+                urzadOld.wojewodztwo_id = urzedy.wojewodztwo_id;
+            }
+            catch (ArgumentNullException ex) {
+                return NotFound();
+            }
+
 
             try
             {
@@ -77,12 +102,16 @@ namespace KSiwiak_Urzad_API.Controllers
         // POST: api/Urzedy
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Urzedy>> PostUrzedy(Urzedy urzedy)
+        public async Task<ActionResult<Urzad_Woj>> PostUrzedy(Urzedy urzedy)
         {
-            _context.Urzedy.Add(urzedy);
+            this.index = this.index+1;
+            Urzedy newUrzad = new Urzedy { id = index, nazwa_urzedu = urzedy.nazwa_urzedu, wojewodztwo_id = urzedy.wojewodztwo_id };
+            _context.Urzedy.Add(newUrzad);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUrzedy", new { id = urzedy.id }, urzedy);
+            string nazwa_woj = _context.Wojewodztwa.Where(w => w.id == newUrzad.wojewodztwo_id).FirstOrDefault().nazwa;
+            
+            return new Urzad_Woj { id = newUrzad.id, nazwa_urzedu = newUrzad.nazwa_urzedu, nazwa_wojewodztwa = nazwa_woj, wojewodztwo_id = newUrzad.wojewodztwo_id };
         }
 
         // DELETE: api/Urzedy/5
@@ -98,7 +127,7 @@ namespace KSiwiak_Urzad_API.Controllers
             _context.Urzedy.Remove(urzedy);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok();
         }
 
         private bool UrzedyExists(int id)
