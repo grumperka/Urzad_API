@@ -16,10 +16,12 @@ namespace KSiwiak_Urzad_API.Controllers
     public class Akty_zgonuController : ControllerBase
     {
         private readonly UrzadDBContext _context;
+        private int index;
 
         public Akty_zgonuController(UrzadDBContext context)
         {
             _context = context;
+            index = _context.Akty_zgonu.ToList().Last().id;
         }
 
         // GET: api/Akty_zgonu
@@ -45,44 +47,46 @@ namespace KSiwiak_Urzad_API.Controllers
 
         // PUT: api/Akty_zgonu/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAkty_zgonu(int id, Akty_zgonu akty_zgonu)
-        {
-            if (id != akty_zgonu.id)
-            {
-                return BadRequest();
-            }
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutAkty_zgonu(int id, Akty_zgonu akty_zgonu)
+        //{
+        //    if (id != akty_zgonu.id)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            _context.Entry(akty_zgonu).State = EntityState.Modified;
+        //    _context.Entry(akty_zgonu).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!Akty_zgonuExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!Akty_zgonuExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // POST: api/Akty_zgonu
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Akty_zgonu>> PostAkty_zgonu(Akty_zgonu akty_zgonu)
         {
+            this.index += 1;
+            akty_zgonu.id = this.index;
             _context.Akty_zgonu.Add(akty_zgonu);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetAkty_zgonu", new { id = akty_zgonu.id }, akty_zgonu);
+            return akty_zgonu;
         }
 
         // DELETE: api/Akty_zgonu/5

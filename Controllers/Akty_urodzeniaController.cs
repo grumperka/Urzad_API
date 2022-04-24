@@ -16,10 +16,12 @@ namespace KSiwiak_Urzad_API.Controllers
     public class Akty_urodzeniaController : ControllerBase
     {
         private readonly UrzadDBContext _context;
+        private int index;
 
         public Akty_urodzeniaController(UrzadDBContext context)
         {
             _context = context;
+            index = _context.Akty_urodzenia.ToList().Last().id;
         }
 
         // GET: api/Akty_urodzenia
@@ -45,44 +47,47 @@ namespace KSiwiak_Urzad_API.Controllers
 
         // PUT: api/Akty_urodzenia/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAkty_urodzenia(int id, Akty_urodzenia akty_urodzenia)
-        {
-            if (id != akty_urodzenia.id)
-            {
-                return BadRequest();
-            }
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutAkty_urodzenia(int id, Akty_urodzenia akty_urodzenia)
+        //{
+        //    if (id != akty_urodzenia.id)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            _context.Entry(akty_urodzenia).State = EntityState.Modified;
+        //    _context.Entry(akty_urodzenia).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!Akty_urodzeniaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!Akty_urodzeniaExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // POST: api/Akty_urodzenia
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Akty_urodzenia>> PostAkty_urodzenia(Akty_urodzenia akty_urodzenia)
         {
+            this.index += 1;
+            akty_urodzenia.id = this.index;
+            akty_urodzenia.data_wydania_aktu = new DateTime();
             _context.Akty_urodzenia.Add(akty_urodzenia);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetAkty_urodzenia", new { id = akty_urodzenia.id }, akty_urodzenia);
+            return akty_urodzenia;
         }
 
         // DELETE: api/Akty_urodzenia/5

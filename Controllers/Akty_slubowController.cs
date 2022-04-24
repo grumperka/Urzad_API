@@ -16,10 +16,12 @@ namespace KSiwiak_Urzad_API.Controllers
     public class Akty_slubowController : ControllerBase
     {
         private readonly UrzadDBContext _context;
+        private int index;
 
         public Akty_slubowController(UrzadDBContext context)
         {
             _context = context;
+            index = _context.Akty_slubow.ToList().Last().id;
         }
 
         // GET: api/Akty_slubow
@@ -45,44 +47,57 @@ namespace KSiwiak_Urzad_API.Controllers
 
         // PUT: api/Akty_slubow/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAkty_slubow(int id, Akty_slubow akty_slubow)
-        {
-            if (id != akty_slubow.id)
-            {
-                return BadRequest();
-            }
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutAkty_slubow(int id, Akty_slubow akty_slubow)
+        //{
+        //    if (id != akty_slubow.id)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            _context.Entry(akty_slubow).State = EntityState.Modified;
+        //    //_context.Entry(akty_slubow).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!Akty_slubowExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    try
+        //    {
+        //        Akty_slubow akty_SlubuOld = _context.Akty_slubow.Find(id);
+        //        //akty_SlubuOld.
+        //    }
+        //    catch (ArgumentNullException ex)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return NoContent();
-        }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!Akty_slubowExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+
+        //    return NoContent();
+        //}
 
         // POST: api/Akty_slubow
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Akty_slubow>> PostAkty_slubow(Akty_slubow akty_slubow)
         {
+            this.index = +1;
+            akty_slubow.id = this.index;
+            akty_slubow.data_wydania_aktu = new DateTime();
             _context.Akty_slubow.Add(akty_slubow);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetAkty_slubow", new { id = akty_slubow.id }, akty_slubow);
+            return akty_slubow;
         }
 
         // DELETE: api/Akty_slubow/5

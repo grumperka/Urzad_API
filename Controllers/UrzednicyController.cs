@@ -16,10 +16,12 @@ namespace KSiwiak_Urzad_API.Controllers
     public class UrzednicyController : ControllerBase
     {
         private readonly UrzadDBContext _context;
+        private int index;
 
         public UrzednicyController(UrzadDBContext context)
         {
             _context = context;
+            index = _context.Urzednicy.ToList().Last().id;
         }
 
         // GET: api/Urzednicy
@@ -53,7 +55,24 @@ namespace KSiwiak_Urzad_API.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(urzednicy).State = EntityState.Modified;
+            //_context.Entry(urzednicy).State = EntityState.Modified;
+
+            try
+            {
+                Urzednicy urzednicyOld = _context.Urzednicy.Find(id);
+                urzednicyOld.imie = urzednicy.imie;
+                urzednicyOld.nazwisko = urzednicy.nazwisko;
+                if (urzednicyOld.urzad_id != urzednicy.urzad_id) { 
+                    int kierownikId = _context.Kierownicy.Where(w => w.urzad_id == urzednicy.urzad_id && w.czy_zastepca_T_N == 0).FirstOrDefault().id;
+                    urzednicyOld.kierownik_id = kierownikId;
+                    urzednicyOld.urzad_id = urzednicy.urzad_id;
+                }
+                urzednicyOld.login = urzednicy.imie.ToLower() + urzednicy.nazwisko + "_" + urzednicy.id + "@poczta.pl";
+            }
+            catch (ArgumentNullException ex)
+            {
+                return NotFound();
+            }
 
             try
             {
@@ -79,10 +98,13 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpPost]
         public async Task<ActionResult<Urzednicy>> PostUrzednicy(Urzednicy urzednicy)
         {
-            _context.Urzednicy.Add(urzednicy);
+            this.index = this.index + 1;
+            int kierownikId = _context.Kierownicy.Where(w => w.urzad_id == urzednicy.urzad_id && w.czy_zastepca_T_N == 0).FirstOrDefault().id;
+            Urzednicy newUrzednicy = new Urzednicy { id = this.index, imie = urzednicy.imie, nazwisko = urzednicy.nazwisko, urzad_id = urzednicy.urzad_id, kierownik_id = kierownikId, login = urzednicy.imie.ToLower() + urzednicy.nazwisko + "_" + urzednicy.id+"@poczta.pl" };
+            _context.Urzednicy.Add(newUrzednicy);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUrzednicy", new { id = urzednicy.id }, urzednicy);
+            return newUrzednicy;
         }
 
         // DELETE: api/Urzednicy/5

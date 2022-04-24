@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using KSiwiak_Urzad_API.Data;
 using Urzad_KSiwiak.Models;
+using KSiwiak_Urzad_API.Models;
 
 namespace KSiwiak_Urzad_API.Controllers
 {
@@ -16,10 +17,12 @@ namespace KSiwiak_Urzad_API.Controllers
     public class KierownicyController : ControllerBase
     {
         private readonly UrzadDBContext _context;
+        private int index;
 
         public KierownicyController(UrzadDBContext context)
         {
             _context = context;
+            index = _context.Kierownicy.ToList().Last().id;
         }
 
         // GET: api/Kierownicy
@@ -27,6 +30,27 @@ namespace KSiwiak_Urzad_API.Controllers
         public async Task<ActionResult<IEnumerable<Kierownicy>>> GetKierownicy()
         {
             return await _context.Kierownicy.ToListAsync();
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<IEnumerable<Kierownicy_Urzad>>> GetKierownicy_Urzad()
+        {
+                var kierownicyList =  await _context.Kierownicy.Where(w => w.czy_zastepca_T_N == 0).ToListAsync();
+                var UrzedyList = await _context.Urzedy.ToListAsync();
+
+                List<Kierownicy_Urzad> kierownicy_Urzad_list = new List<Kierownicy_Urzad>();
+
+                foreach (Kierownicy k in kierownicyList) {
+                    string nazwaUrzedu = UrzedyList.Where(w => w.id == k.urzad_id).FirstOrDefault().nazwa_urzedu;
+
+                    if (nazwaUrzedu != null) { 
+                    kierownicy_Urzad_list.Add(new Kierownicy_Urzad { id = k.id, imie = k.imie, nazwisko = k.nazwisko, urzad_id = k.urzad_id, nazwa_urzedu = nazwaUrzedu, czy_zastepca_T_N = k.czy_zastepca_T_N, login = k.login } );
+                    }
+                }
+
+                return kierownicy_Urzad_list;
+
         }
 
         // GET: api/Kierownicy/5
@@ -53,7 +77,21 @@ namespace KSiwiak_Urzad_API.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(kierownicy).State = EntityState.Modified;
+            //_context.Entry(kierownicy).State = EntityState.Modified;
+
+            try
+            {
+                Kierownicy kierownicyOld = _context.Kierownicy.Find(id);
+                kierownicyOld.imie = kierownicy.imie;
+                kierownicyOld.nazwisko = kierownicy.nazwisko;
+                kierownicyOld.urzad_id = kierownicy.urzad_id;
+                kierownicyOld.czy_zastepca_T_N = kierownicy.czy_zastepca_T_N;
+                kierownicyOld.login = kierownicy.imie.ToLower() + kierownicy.nazwisko + "_" + id + "@poczta.pl";
+            }
+            catch (ArgumentNullException ex)
+            {
+                return NotFound();
+            }
 
             try
             {
@@ -79,6 +117,9 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpPost]
         public async Task<ActionResult<Kierownicy>> PostKierownicy(Kierownicy kierownicy)
         {
+            this.index += 1;
+            kierownicy.id = this.index;
+            kierownicy.login = kierownicy.imie.ToLower() + kierownicy.nazwisko + "_" + kierownicy.id + "@poczta.pl";
             _context.Kierownicy.Add(kierownicy);
             await _context.SaveChangesAsync();
 

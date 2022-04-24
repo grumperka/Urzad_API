@@ -16,10 +16,12 @@ namespace KSiwiak_Urzad_API.Controllers
     public class Akty_rozwoduController : ControllerBase
     {
         private readonly UrzadDBContext _context;
+        private int index;
 
         public Akty_rozwoduController(UrzadDBContext context)
         {
             _context = context;
+            index = _context.Akty_rozwodu.ToList().Last().id;
         }
 
         // GET: api/Akty_rozwodu
@@ -53,7 +55,18 @@ namespace KSiwiak_Urzad_API.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(akty_rozwodu).State = EntityState.Modified;
+            //_context.Entry(akty_rozwodu).State = EntityState.Modified;
+
+            try
+            {
+                Akty_rozwodu akty_RozwoduOld = _context.Akty_rozwodu.Find(id);
+                akty_RozwoduOld.z_orzekaniem_winy_T_N = akty_rozwodu.z_orzekaniem_winy_T_N;
+                akty_RozwoduOld.czy_wylacznie_T_N = akty_rozwodu.czy_wylacznie_T_N;
+            }
+            catch (ArgumentNullException ex)
+            {
+                return NotFound();
+            }
 
             try
             {
@@ -79,10 +92,13 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpPost]
         public async Task<ActionResult<Akty_rozwodu>> PostAkty_rozwodu(Akty_rozwodu akty_rozwodu)
         {
+            this.index += 1;
+            akty_rozwodu.id = this.index;
+            akty_rozwodu.id_urzedu = _context.Urzednicy.Find(akty_rozwodu.id_urzednika).urzad_id;
             _context.Akty_rozwodu.Add(akty_rozwodu);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetAkty_rozwodu", new { id = akty_rozwodu.id }, akty_rozwodu);
+            return akty_rozwodu;
         }
 
         // DELETE: api/Akty_rozwodu/5
