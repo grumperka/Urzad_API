@@ -24,20 +24,28 @@ namespace KSiwiak_Urzad_API.Controllers
             index = _context.Obywatele.ToList().Last().id;
         }
 
+        private List<int> getMarriedIdK() {
+            List<int> obywateleSlubList = _context.Akty_slubow.Select(s => s.id_malzonka).ToList();
+            List<int> obywateleRozwodList = _context.Akty_rozwodu.Select(s => s.id_rozwodnika).ToList();
+            obywateleSlubList.RemoveAll(r => obywateleRozwodList.Contains(r));
+            return obywateleSlubList;
+        }
+
+        private List<int> getMarriedIdM()
+        {
+            List<int> obywateleSlubList = _context.Akty_slubow.Select(s => s.id_malzonki).ToList();
+            List<int> obywateleRozwodList = _context.Akty_rozwodu.Select(s => s.id_rozwodniczki).ToList();
+            obywateleSlubList.RemoveAll(r => obywateleRozwodList.Contains(r));
+            return obywateleSlubList;
+        }
+
         // GET: api/Obywatele
         [HttpGet("getObywatelM")]
         public async Task<ActionResult<IEnumerable<Obywatele>>> GetObywatelM()
         {
-            List<int> obywateleSlubList = _context.Akty_slubow.Select(s => s.id_malzonka).ToList();
-            List<int> obywateleRozwodList = _context.Akty_rozwodu.Select(s => s.id_rozwodnika).ToList();
-            obywateleSlubList.RemoveAll(r => obywateleRozwodList.Contains(r));
+            List<int> obywateleSlubList = getMarriedIdK();
 
-            List<Obywatele> results = new List<Obywatele>();
-            obywateleSlubList.ForEach(o =>
-            {
-                results.Add(_context.Obywatele.Find(o));
-            }
-            );
+            List<Obywatele> results = getAliveCitizensFromListToObywateleList(obywateleSlubList);
 
             return results;
         }
@@ -45,16 +53,9 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpGet("getObywatelK")]
         public async Task<ActionResult<IEnumerable<Obywatele>>> GetObywatelK()
         {
-            List<int> obywateleSlubList = _context.Akty_slubow.Select(s => s.id_malzonki).ToList();
-            List<int> obywateleRozwodList = _context.Akty_rozwodu.Select(s => s.id_rozwodniczki).ToList();
-            obywateleSlubList.RemoveAll(r => obywateleRozwodList.Contains(r));
+            List<int> obywateleSlubList = getMarriedIdM();
 
-            List<Obywatele> results = new List<Obywatele>();
-            obywateleSlubList.ForEach(o =>
-            {
-                results.Add(_context.Obywatele.Find(o));
-            }
-            );
+            List<Obywatele> results = getAliveCitizensFromListToObywateleList(obywateleSlubList);
 
             return results;
         }
@@ -63,6 +64,55 @@ namespace KSiwiak_Urzad_API.Controllers
         public async Task<ActionResult<IEnumerable<Obywatele>>> GetObywatele()
         {
             return await _context.Obywatele.ToListAsync();
+        }
+
+        private List<Obywatele> getAliveCitizens() {
+            List<Obywatele> listaObywateli = _context.Obywatele.ToList();
+            List<int> listaZgonow = _context.Akty_zgonu.Select(s => s.id_obywatela).ToList();
+            listaObywateli.RemoveAll(r => listaZgonow.Contains(r.id));
+            return listaObywateli;
+        }
+
+        private List<Obywatele> getAliveCitizensFromListToObywateleList(List<int> citizensId)
+        {
+            List<int> listaZgonow = _context.Akty_zgonu.Select(s => s.id_obywatela).ToList();
+            citizensId.RemoveAll(r => listaZgonow.Contains(r));
+
+            List<Obywatele> results = new List<Obywatele>();
+            citizensId.ForEach(o =>
+            {
+                results.Add(_context.Obywatele.Find(o));
+            }
+            );
+
+            return results;
+        }
+
+        [HttpGet("getAlive")]
+        public async Task<ActionResult<IEnumerable<Obywatele>>> getAlive()
+        {
+            return getAliveCitizens();
+        }
+
+        [HttpGet("getAliveWithoutAktUrodzenia")]
+        public async Task<ActionResult<IEnumerable<Obywatele>>> getAlivewithoutAktUrodzenia()
+        {
+            List<Obywatele> result = getAliveCitizens();
+            List<int> listaAktowUrodzenia = _context.Akty_urodzenia.Select(s => s.id_obywatela).ToList();
+            result.RemoveAll(r => listaAktowUrodzenia.Contains(r.id));
+            return result;
+        }
+
+        [HttpGet("getSingle")]
+        public async Task<ActionResult<IEnumerable<Obywatele>>> getSingle()
+        {
+            List<Obywatele> alive = getAliveCitizens();
+            List<int> marriedK = getMarriedIdK();
+            List<int> marriedM = getMarriedIdM();
+            alive.RemoveAll(r => marriedK.Contains(r.id));
+            alive.RemoveAll(r => marriedM.Contains(r.id));
+
+            return alive;
         }
 
         // GET: api/Obywatele/5
@@ -182,7 +232,7 @@ namespace KSiwiak_Urzad_API.Controllers
             _context.Obywatele.Add(obywatele);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetObywatele", new { id = obywatele.id }, obywatele);
+            return obywatele;
         }
 
         // DELETE: api/Obywatele/5

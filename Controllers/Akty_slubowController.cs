@@ -91,9 +91,9 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpPost]
         public async Task<ActionResult<Akty_slubow>> PostAkty_slubow(Akty_slubow akty_slubow)
         {
-            this.index = +1;
+            this.index += 1;
             akty_slubow.id = this.index;
-            akty_slubow.data_wydania_aktu = new DateTime();
+            akty_slubow.id_urzedu = _context.Urzednicy.Find(akty_slubow.id_urzednika).urzad_id;
             _context.Akty_slubow.Add(akty_slubow);
             await _context.SaveChangesAsync();
 

@@ -83,6 +83,7 @@ namespace KSiwiak_Urzad_API.Controllers
         {
             this.index += 1;
             akty_zgonu.id = this.index;
+            akty_zgonu.id_urzedu = _context.Urzednicy.Find(akty_zgonu.id_urzednika).urzad_id;
             _context.Akty_zgonu.Add(akty_zgonu);
             await _context.SaveChangesAsync();
 

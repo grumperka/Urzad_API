@@ -60,6 +60,7 @@ namespace KSiwiak_Urzad_API.Controllers
             try
             {
                 Akty_rozwodu akty_RozwoduOld = _context.Akty_rozwodu.Find(id);
+                akty_RozwoduOld.id_powodu_glownego = akty_rozwodu.id_powodu_glownego;
                 akty_RozwoduOld.z_orzekaniem_winy_T_N = akty_rozwodu.z_orzekaniem_winy_T_N;
                 akty_RozwoduOld.czy_wylacznie_T_N = akty_rozwodu.czy_wylacznie_T_N;
             }

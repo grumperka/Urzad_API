@@ -123,7 +123,7 @@ namespace KSiwiak_Urzad_API.Controllers
             _context.Kierownicy.Add(kierownicy);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetKierownicy", new { id = kierownicy.id }, kierownicy);
+            return kierownicy;
         }
 
         // DELETE: api/Kierownicy/5

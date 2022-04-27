@@ -83,7 +83,7 @@ namespace KSiwiak_Urzad_API.Controllers
         {
             this.index += 1;
             akty_urodzenia.id = this.index;
-            akty_urodzenia.data_wydania_aktu = new DateTime();
+            akty_urodzenia.id_urzedu = _context.Urzednicy.Find(akty_urodzenia.id_urzednika).urzad_id;
             _context.Akty_urodzenia.Add(akty_urodzenia);
             await _context.SaveChangesAsync();
 
