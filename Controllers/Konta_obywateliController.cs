@@ -15,18 +15,33 @@ namespace KSiwiak_Urzad_API.Controllers
     [ApiController]
     public class Konta_obywateliController : ControllerBase
     {
-        private readonly UrzadDBContext _context;
+        private UrzadDBContext _context;
+        private UrzadDBContext context;
 
         public Konta_obywateliController(UrzadDBContext context)
         {
             _context = context;
+            context = null;
         }
 
         // GET: api/Konta_obywateli
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Konta_obywateli>>> GetKonta_obywateli()
         {
-            return await _context.Konta_obywateli.ToListAsync();
+            List<Konta_obywateli> resultList = new List<Konta_obywateli>();
+            try
+            {
+                //var contextOptions = new DbContextOptionsBuilder<UrzadDBContext>()
+                //.UseSqlServer("Data Source = GRUMPERKA\\SIWIAK; Initial Catalog = Urzedy; MultipleActiveResultSets = True;User Id = hansKarlsson;Password = hans2002;Trusted_Connection = False;Integrated Security=False;")
+                //.Options;
+                //var context = new UrzadDBContext(contextOptions);
+                resultList = await _context.Konta_obywateli.Select(s => new Konta_obywateli { id = s.id, id_obywatela = s.id_obywatela, haslo = s.haslo, login = s.login }).ToListAsync();
+            }
+            catch (Exception ex) {
+                return Forbid();
+            }
+            
+            return resultList;
         }
 
         // GET: api/Konta_obywateli/5

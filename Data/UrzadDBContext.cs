@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using KSiwiak_Urzad_API.Models;
+using Microsoft.EntityFrameworkCore;
 using Urzad_KSiwiak.Models;
 
 namespace KSiwiak_Urzad_API.Data
 {
     public class UrzadDBContext : DbContext
     {
-        public UrzadDBContext(DbContextOptions options) : base(options)
+        public UrzadDBContext(DbContextOptions<UrzadDBContext> options) : base(options)
         {
         }
 
@@ -37,6 +38,44 @@ namespace KSiwiak_Urzad_API.Data
 
         public DbSet<Wojewodztwa> Wojewodztwa { get; set; }
 
-       
+        //public bool isSessionOpen(HttpContext httpContext)
+        //{
+        //    byte[] tokenb = new Byte[20];
+        //    byte[] rolab = new Byte[10];
+        //    byte[] userIDb = new Byte[10];
+
+        //    bool isToken = httpContext.Session.TryGetValue("token", out tokenb);
+        //    bool isRola = httpContext.Session.TryGetValue("rola", out rolab);
+        //    bool isUserID = httpContext.Session.TryGetValue("userID", out userIDb);
+
+        //    if (isToken || isRola || isUserID)
+        //    {
+        //        return true;
+        //    }
+        //    else return false;
+        //}
+
+        //public Token isTokenValid(HttpContext httpContext, string tokenString) 
+        //{
+        //    string token = httpContext.Session.GetString("token");
+        //    string rola = httpContext.Session.GetString("rola");
+        //    int userID = (int)httpContext.Session.GetInt32("userID");
+
+        //    if (token.Equals(tokenString)) {
+        //        return new Token { token = token, rola = rola, userID = userID };
+        //    }
+        //    else return null;
+        //}
+
+        public string getRola(HttpContext httpContext)
+        {
+            return httpContext.Session.GetString("rola");
+        }
+
+        public int getUserId(HttpContext httpContext)
+        {
+            return (int)httpContext.Session.GetInt32("userID");
+        }
+
     }
 }

@@ -12,7 +12,7 @@ namespace Urzad_KSiwiak.Models
 
         [Required]
         [MaxLength(100)]
-        public string login { get; set; }
+        public string email { get; set; }
 
         [Required]
         [MaxLength(60)]

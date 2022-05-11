@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using KSiwiak_Urzad_API.Data;
 using Urzad_KSiwiak.Models;
 using KSiwiak_Urzad_API.Models;
+using Microsoft.Data.SqlClient;
 
 namespace KSiwiak_Urzad_API.Controllers
 {
@@ -16,7 +17,7 @@ namespace KSiwiak_Urzad_API.Controllers
     [ApiController]
     public class KierownicyController : ControllerBase
     {
-        private readonly UrzadDBContext _context;
+        private UrzadDBContext _context;
         private int index;
 
         public KierownicyController(UrzadDBContext context)
@@ -29,6 +30,10 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Kierownicy>>> GetKierownicy()
         {
+            var contextOptions = new DbContextOptionsBuilder<UrzadDBContext>()
+            .UseSqlServer("Data Source = GRUMPERKA\\SIWIAK; Initial Catalog = Urzedy; Integrated Security = True; MultipleActiveResultSets = True;User Id = hansKarlsson;Password=hans2002;")
+            .Options;
+            this._context = new UrzadDBContext(contextOptions);
             return await _context.Kierownicy.ToListAsync();
         }
 
