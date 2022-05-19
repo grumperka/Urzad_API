@@ -20,7 +20,6 @@ namespace KSiwiak_Urzad_API.Controllers
         [Route("PostKierownikLogin")]
         public ActionResult<Token> PostKierownikLogin([FromBody] Login login) //nie wchodzą dane :(
         {
-
             Konta_kierownikow konto = _context.Konta_kierownikow.Where(w => w.email == login.login && w.haslo == login.haslo).FirstOrDefault();
 
             if (konto != null)
@@ -36,7 +35,8 @@ namespace KSiwiak_Urzad_API.Controllers
 
                 if (kierownicy != null)
                 {
-                    Token token = new Token { token = resultToken.ToString(), rola = "kierownik", userID = kierownicy.id };
+                    string connectionStringLogin = login.login.Split("_")[0] + konto.id.ToString();
+                    Token token = new Token { token = resultToken.ToString(), rola = "kierownik", userID = kierownicy.id, connectionString = "User Id="+ connectionStringLogin + ";Password=" + login.haslo + ";"};
                     return token;
                 }
                 else return NotFound();
@@ -63,7 +63,8 @@ namespace KSiwiak_Urzad_API.Controllers
 
                 if (urzednik != null)
                 {
-                    Token token = new Token { token = resultToken.ToString(), rola = "urzednik", userID = urzednik.id };
+                    string connectionStringLogin = login.login.Split("_")[0] + konto.id.ToString();
+                    Token token = new Token { token = resultToken.ToString(), rola = "urzednik", userID = urzednik.id, connectionString = "User Id=" + connectionStringLogin + ";Password=" + login.haslo + ";" };
                     return token;
                 }
                 else return NotFound();
@@ -89,7 +90,8 @@ namespace KSiwiak_Urzad_API.Controllers
 
                 if (obywatel != null)
                 {
-                    Token token = new Token { token = resultToken.ToString(), rola = "obywatel", userID = obywatel.id };
+                    string connectionStringLogin = login.login.Split("_")[0] + konto.id.ToString();
+                    Token token = new Token { token = resultToken.ToString(), rola = "obywatel", userID = obywatel.id, connectionString = "User Id=" + connectionStringLogin + ";Password=" + login.haslo + ";" };
                     return token;
                 }
                 else return NotFound();
@@ -109,7 +111,8 @@ namespace KSiwiak_Urzad_API.Controllers
                    Enumerable.Repeat(allChar, 20)
                    .Select(token => token[random.Next(token.Length)]).ToArray());
 
-                Token token = new Token { token = resultToken.ToString(), rola = "administrator", userID = 0 };
+                string connectionStringLogin = "User Id=administrator;Password=administrator;";
+                Token token = new Token { token = resultToken.ToString(), rola = "administrator", userID = 0, connectionString = connectionStringLogin };
                 return token;
             }
             else return NotFound();

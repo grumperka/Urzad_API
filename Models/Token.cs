@@ -9,6 +9,7 @@
         public int userID { get; set; }
 
         //dodac login i haslo?
+        public string connectionString { get; set; }
 
     }
 }

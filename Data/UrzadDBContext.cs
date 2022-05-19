@@ -77,5 +77,9 @@ namespace KSiwiak_Urzad_API.Data
             return (int)httpContext.Session.GetInt32("userID");
         }
 
+        public string getAuthorizationHeader(HttpContext httpContext) { 
+            return httpContext.Request.Headers["Authorization"].ToString();
+        }
+
     }
 }

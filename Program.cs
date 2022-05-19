@@ -19,8 +19,18 @@ builder.Services.AddCors(options =>
                       {
                           builder.WithOrigins("http://localhost:4200")
                                                 .AllowAnyHeader()
-                                                .AllowAnyMethod();
+                                                .AllowAnyMethod()
+                                                .AllowCredentials();
                       });
+
+//    options.AddPolicy("AllowAll", p =>
+//    {
+//        p.AllowAnyOrigin()
+//        .AllowAnyHeader()
+//        .AllowAnyMethod()
+//        .AllowCredentials()
+//        .SetIsOriginAllowed(hostName => true);
+//});
 });
 
 builder.Services.AddDbContext<UrzadDBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("UrzedyDBConnectionString")));
