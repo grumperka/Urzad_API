@@ -31,10 +31,9 @@ namespace KSiwiak_Urzad_API.Controllers
         public async Task<ActionResult<IEnumerable<Kierownicy>>> GetKierownicy()
         {
             var contextOptions = new DbContextOptionsBuilder<UrzadDBContext>()
-            .UseSqlServer("Data Source = GRUMPERKA\\SIWIAK; Initial Catalog = Urzedy; Integrated Security = True; MultipleActiveResultSets = True;User Id = hansKarlsson;Password=hans2002;")
-            .Options;
-            this._context = new UrzadDBContext(contextOptions);
-            return await _context.Kierownicy.ToListAsync();
+            .UseSqlServer("Data Source = GRUMPERKA\\SIWIAK; Initial Catalog = Urzedy; Integrated Security = True; MultipleActiveResultSets = True;User Id = stevenKing5001;Password=steven5001;").Options;
+            var context = new UrzadDBContext(contextOptions);
+            return await context.Kierownicy.ToListAsync();
         }
 
         [HttpGet]

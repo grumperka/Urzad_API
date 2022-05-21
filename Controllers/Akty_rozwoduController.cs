@@ -186,7 +186,10 @@ namespace KSiwiak_Urzad_API.Controllers
 
             //    if (rola.Equals("urzednik") || rola.Equals("kierownik"))
             //    {
-                    this.index += 1;
+
+            var header = _context.getAuthorizationHeader(HttpContext);
+
+                this.index += 1;
                     akty_rozwodu.id = this.index;
                     akty_rozwodu.id_urzedu = _context.Urzednicy.Find(akty_rozwodu.id_urzednika).urzad_id;
                     _context.Akty_rozwodu.Add(akty_rozwodu);
