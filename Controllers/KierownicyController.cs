@@ -18,21 +18,34 @@ namespace KSiwiak_Urzad_API.Controllers
     public class KierownicyController : ControllerBase
     {
         private UrzadDBContext _context;
-        private int index;
 
         public KierownicyController(UrzadDBContext context)
         {
             _context = context;
-            index = _context.Kierownicy.ToList().Last().id;
         }
 
-        // GET: api/Kierownicy
-        [HttpGet]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public UrzadDBContext getContext(string header)
+        {
+
+            if (!header.Equals(""))
+            {
+                var contextOptions = new DbContextOptionsBuilder<UrzadDBContext>()
+                .UseSqlServer("Data Source = GRUMPERKA\\SIWIAK; Initial Catalog = Urzedy; Integrated Security = False;" + header).Options;
+                return new UrzadDBContext(contextOptions);
+            }
+            else
+            {
+                return this._context;
+            }
+        }
+
+            // GET: api/Kierownicy
+            [HttpGet]
         public async Task<ActionResult<IEnumerable<Kierownicy>>> GetKierownicy()
         {
-            var contextOptions = new DbContextOptionsBuilder<UrzadDBContext>()
-            .UseSqlServer("Data Source = GRUMPERKA\\SIWIAK; Initial Catalog = Urzedy; Integrated Security = True; MultipleActiveResultSets = True;User Id = stevenKing5001;Password=steven5001;").Options;
-            var context = new UrzadDBContext(contextOptions);
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
             return await context.Kierownicy.ToListAsync();
         }
 
@@ -40,20 +53,24 @@ namespace KSiwiak_Urzad_API.Controllers
         [Route("[action]")]
         public async Task<ActionResult<IEnumerable<Kierownicy_Urzad>>> GetKierownicy_Urzad()
         {
-                var kierownicyList =  await _context.Kierownicy.Where(w => w.czy_zastepca_T_N == 0).ToListAsync();
-                var UrzedyList = await _context.Urzedy.ToListAsync();
 
-                List<Kierownicy_Urzad> kierownicy_Urzad_list = new List<Kierownicy_Urzad>();
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
 
-                foreach (Kierownicy k in kierownicyList) {
+            var kierownicyList =  await context.Kierownicy.Where(w => w.czy_zastepca_T_N == 0).ToListAsync();
+            var UrzedyList = await context.Urzedy.ToListAsync();
+
+            List<Kierownicy_Urzad> kierownicy_Urzad_list = new List<Kierownicy_Urzad>();
+
+            foreach (Kierownicy k in kierownicyList) {
                     string nazwaUrzedu = UrzedyList.Where(w => w.id == k.urzad_id).FirstOrDefault().nazwa_urzedu;
 
                     if (nazwaUrzedu != null) { 
                     kierownicy_Urzad_list.Add(new Kierownicy_Urzad { id = k.id, imie = k.imie, nazwisko = k.nazwisko, urzad_id = k.urzad_id, nazwa_urzedu = nazwaUrzedu, czy_zastepca_T_N = k.czy_zastepca_T_N, login = k.login } );
                     }
-                }
+            }
 
-                return kierownicy_Urzad_list;
+            return kierownicy_Urzad_list;
 
         }
 
@@ -61,7 +78,10 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Kierownicy>> GetKierownicy(int id)
         {
-            var kierownicy = await _context.Kierownicy.FindAsync(id);
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
+
+            var kierownicy = await context.Kierownicy.FindAsync(id);
 
             if (kierownicy == null)
             {
@@ -81,11 +101,12 @@ namespace KSiwiak_Urzad_API.Controllers
                 return BadRequest();
             }
 
-            //_context.Entry(kierownicy).State = EntityState.Modified;
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
 
             try
             {
-                Kierownicy kierownicyOld = _context.Kierownicy.Find(id);
+                Kierownicy kierownicyOld = context.Kierownicy.Find(id);
                 kierownicyOld.imie = kierownicy.imie;
                 kierownicyOld.nazwisko = kierownicy.nazwisko;
                 kierownicyOld.urzad_id = kierownicy.urzad_id;
@@ -99,7 +120,7 @@ namespace KSiwiak_Urzad_API.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -121,11 +142,13 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpPost]
         public async Task<ActionResult<Kierownicy>> PostKierownicy(Kierownicy kierownicy)
         {
-            this.index += 1;
-            kierownicy.id = this.index;
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
+
+            kierownicy.id = context.Kierownicy.ToList().Last().id + 1;
             kierownicy.login = kierownicy.imie.ToLower() + kierownicy.nazwisko + "_" + kierownicy.id + "@poczta.pl";
-            _context.Kierownicy.Add(kierownicy);
-            await _context.SaveChangesAsync();
+            context.Kierownicy.Add(kierownicy);
+            await context.SaveChangesAsync();
 
             return kierownicy;
         }
@@ -134,21 +157,26 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteKierownicy(int id)
         {
-            var kierownicy = await _context.Kierownicy.FindAsync(id);
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
+
+            var kierownicy = await context.Kierownicy.FindAsync(id);
             if (kierownicy == null)
             {
                 return NotFound();
             }
 
-            _context.Kierownicy.Remove(kierownicy);
-            await _context.SaveChangesAsync();
+            context.Kierownicy.Remove(kierownicy);
+            await context.SaveChangesAsync();
 
             return NoContent();
         }
 
         private bool KierownicyExists(int id)
         {
-            return _context.Kierownicy.Any(e => e.id == id);
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
+            return context.Kierownicy.Any(e => e.id == id);
         }
     }
 }

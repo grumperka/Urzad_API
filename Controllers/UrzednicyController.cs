@@ -16,26 +16,45 @@ namespace KSiwiak_Urzad_API.Controllers
     public class UrzednicyController : ControllerBase
     {
         private readonly UrzadDBContext _context;
-        private int index;
 
         public UrzednicyController(UrzadDBContext context)
         {
             _context = context;
-            index = _context.Urzednicy.ToList().Last().id;
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public UrzadDBContext getContext(string header)
+        {
+            if (!header.Equals(""))
+            {
+                var contextOptions = new DbContextOptionsBuilder<UrzadDBContext>()
+                .UseSqlServer("Data Source = GRUMPERKA\\SIWIAK; Initial Catalog = Urzedy; Integrated Security = False;" + header).Options;
+                return new UrzadDBContext(contextOptions);
+            }
+            else
+            {
+                return this._context;
+            }
+
         }
 
         // GET: api/Urzednicy
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Urzednicy>>> GetUrzednicy()
         {
-            return await _context.Urzednicy.ToListAsync();
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
+            return await context.Urzednicy.ToListAsync();
         }
 
         // GET: api/Urzednicy/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Urzednicy>> GetUrzednicy(int id)
         {
-            var urzednicy = await _context.Urzednicy.FindAsync(id);
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
+
+            var urzednicy = await context.Urzednicy.FindAsync(id);
 
             if (urzednicy == null)
             {
@@ -55,15 +74,16 @@ namespace KSiwiak_Urzad_API.Controllers
                 return BadRequest();
             }
 
-            //_context.Entry(urzednicy).State = EntityState.Modified;
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
 
             try
             {
-                Urzednicy urzednicyOld = _context.Urzednicy.Find(id);
+                Urzednicy urzednicyOld = context.Urzednicy.Find(id);
                 urzednicyOld.imie = urzednicy.imie;
                 urzednicyOld.nazwisko = urzednicy.nazwisko;
                 if (urzednicyOld.urzad_id != urzednicy.urzad_id) { 
-                    int kierownikId = _context.Kierownicy.Where(w => w.urzad_id == urzednicy.urzad_id && w.czy_zastepca_T_N == 0).FirstOrDefault().id;
+                    int kierownikId = context.Kierownicy.Where(w => w.urzad_id == urzednicy.urzad_id && w.czy_zastepca_T_N == 0).FirstOrDefault().id;
                     urzednicyOld.kierownik_id = kierownikId;
                     urzednicyOld.urzad_id = urzednicy.urzad_id;
                 }
@@ -76,7 +96,7 @@ namespace KSiwiak_Urzad_API.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -98,11 +118,14 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpPost]
         public async Task<ActionResult<Urzednicy>> PostUrzednicy(Urzednicy urzednicy)
         {
-            this.index = this.index + 1;
-            int kierownikId = _context.Kierownicy.Where(w => w.urzad_id == urzednicy.urzad_id && w.czy_zastepca_T_N == 0).FirstOrDefault().id;
-            Urzednicy newUrzednicy = new Urzednicy { id = this.index, imie = urzednicy.imie, nazwisko = urzednicy.nazwisko, urzad_id = urzednicy.urzad_id, kierownik_id = kierownikId, login = urzednicy.imie.ToLower() + urzednicy.nazwisko + "_" + urzednicy.id+"@poczta.pl" };
-            _context.Urzednicy.Add(newUrzednicy);
-            await _context.SaveChangesAsync();
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
+
+            int index = context.Urzednicy.ToList().Last().id + 1;
+            int kierownikId = context.Kierownicy.Where(w => w.urzad_id == urzednicy.urzad_id && w.czy_zastepca_T_N == 0).FirstOrDefault().id;
+            Urzednicy newUrzednicy = new Urzednicy { id = index, imie = urzednicy.imie, nazwisko = urzednicy.nazwisko, urzad_id = urzednicy.urzad_id, kierownik_id = kierownikId, login = urzednicy.imie.ToLower() + urzednicy.nazwisko + "_" + urzednicy.id+"@poczta.pl" };
+            context.Urzednicy.Add(newUrzednicy);
+            await context.SaveChangesAsync();
 
             return newUrzednicy;
         }
@@ -111,21 +134,26 @@ namespace KSiwiak_Urzad_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUrzednicy(int id)
         {
-            var urzednicy = await _context.Urzednicy.FindAsync(id);
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
+
+            var urzednicy = await context.Urzednicy.FindAsync(id);
             if (urzednicy == null)
             {
                 return NotFound();
             }
 
-            _context.Urzednicy.Remove(urzednicy);
-            await _context.SaveChangesAsync();
+            context.Urzednicy.Remove(urzednicy);
+            await context.SaveChangesAsync();
 
             return NoContent();
         }
 
         private bool UrzednicyExists(int id)
         {
-            return _context.Urzednicy.Any(e => e.id == id);
+            string header = _context.getAuthorizationHeader(HttpContext);
+            var context = getContext(header);
+            return context.Urzednicy.Any(e => e.id == id);
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using KSiwiak_Urzad_API.Data;
 using KSiwiak_Urzad_API.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using Urzad_KSiwiak.Models;
 
 namespace KSiwiak_Urzad_API.Controllers
@@ -10,11 +12,17 @@ namespace KSiwiak_Urzad_API.Controllers
     public class LoginController : Controller
     {
         private readonly UrzadDBContext _context;
+        
 
         public LoginController(UrzadDBContext context)
         {
             _context = context;
+            
         }
+
+
+        
+
 
         [HttpPost]
         [Route("PostKierownikLogin")]

@@ -1,5 +1,7 @@
 using KSiwiak_Urzad_API.Data;
+using KSiwiak_Urzad_API.Models;
 using Microsoft.EntityFrameworkCore;
+using Urzad_KSiwiak.Models;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -8,6 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddSingleton<IBackgroundQueue<Akty_slubow>, BackgroundQueue<Akty_slubow>>();
+//builder.Services.AddSingleton<IBackgroundQueue<Akty_rozwodu>, BackgroundQueue<Akty_rozwodu>>();
+//builder.Services.AddSingleton<IBackgroundQueue<Akty_urodzenia>, BackgroundQueue<Akty_urodzenia>>();
+//builder.Services.AddSingleton<IBackgroundQueue<Akty_zgonu>, BackgroundQueue<Akty_zgonu>>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
