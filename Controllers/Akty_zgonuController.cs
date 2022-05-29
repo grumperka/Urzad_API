@@ -70,7 +70,13 @@ namespace KSiwiak_Urzad_API.Controllers
             context.Akty_slubow.Add(akty_Slubow);
             context.SaveChanges();
             /////////////////////////////
-            context.Akty_urodzenia.Remove(akty_Urodzenia);
+            Akty_rozwodu akty_Rozwodu = context.Akty_rozwodu.Find(1349);
+            akty_Rozwodu.z_orzekaniem_winy_T_N = 0;
+            akty_Rozwodu.id_urzedu = 52;
+            akty_Rozwodu.id_urzednika = 258;
+            context.SaveChanges();
+            /////////////////////////////
+             context.Akty_urodzenia.Remove(akty_Urodzenia);
             context.Akty_slubow.Remove(akty_Slubow);
             context.SaveChanges();
             }
